@@ -10,7 +10,7 @@ ASDoc
 Example
 ---------------
 
-プロパティを宣言
+ファイルをアプリケーションストレージにダウンロードして再生
 ```javascript
 public class Exmaple extends Sprite
 {
