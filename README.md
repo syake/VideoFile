@@ -5,7 +5,7 @@ VideoFile
 
 ASDoc
 ---------------
-[http://syake.github.com/VideoFile/asdoc/](http://syake.github.com/VideoFile/asdoc/ "ASDoc")
+[http://syake.github.com/VideoFile/asdoc/com/syake/videofile/VideoFile.html](http://syake.github.com/VideoFile/asdoc/com/syake/videofile/VideoFile.html "ASDoc")
 
 Example
 ---------------
