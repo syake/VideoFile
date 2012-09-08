@@ -11,7 +11,7 @@ package com.syake.videofile
 	import flash.utils.ByteArray;
 	
 	/**
-	 * APIマネージャークラス
+	 * VideoFileManager オブジェクトは、複数のメディアファイルのダウンロードを一括して管理します。
 	 * @version Flash Player 10.1
 	 * @ActionScriptversion ActionScript 3.0
 	 * @author Hiroaki Komatsu
@@ -66,6 +66,7 @@ package com.syake.videofile
 		}
 		
 		/**
+		 * VideoFileオブジェクト
 		 * @see com.syake.filesystem.VideoFile
 		 */
 		public function get videoFile():VideoFile {
@@ -74,7 +75,7 @@ package com.syake.videofile
 		private var _videoFile:VideoFile;
 		
 		/**
-		 * 現在ロードされているメディアの数です。
+		 * 現在ロードされているメディアファイルの数です。
 		 */
 		public function get loaded():uint {
 			return _downloadCount;
@@ -82,7 +83,7 @@ package com.syake.videofile
 		private var _downloadCount:uint;
 		
 		/**
-		 * APIから取得したメディアの総数です。
+		 * 指定されたメディアファイルの総数です。
 		 */
 		public function get total():uint {
 			return _total;

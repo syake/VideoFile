@@ -17,7 +17,7 @@ package com.syake.videofile
 	import flash.net.URLLoaderDataFormat;
 	import flash.net.URLRequest;
 	
-	import mx.utils.UIDUtil
+	import mx.utils.UIDUtil;
 	
 	/**
 	 * VideoFile オブジェクトは、メディアファイルをアプリケーションストレージ内にダウンロードして管理します。
