@@ -270,7 +270,7 @@ package com.syake.videofile
 		/**
 		 * ローカルディレクトリまたは Web サーバーからメディアファイルのダウンロードを開始します。
 		 * @param url ダウンロードされるメディアのURL
-		 * @param chache 同じファイルがすでにダウンロードされていたときファイルをキャッシュする
+		 * @param cache 同じファイルがすでにダウンロードされていたときファイルをキャッシュする
 		 */
 		public function download(url:String, cache:Boolean = false):void
 		{
@@ -414,7 +414,7 @@ package com.syake.videofile
 		/**
 		 * 指定されたURLリストにないファイルデータを削除します。
 		 * @param list メディアのURLリスト
-		 * @param full メディアファイルがあるディレクトリ内の全ての動画ファイルを削除
+		 * @param full 真（ture）のとき、VideoFileクラスが管理しているディレクトリ内の全てのメディアファイルを削除対象にする
 		 */
 		public function deleteDiffFiles(list:Vector.<String>, full:Boolean = false):void
 		{
