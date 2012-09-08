@@ -5,7 +5,10 @@ VideoFile
 
 ASDoc
 ---------------
-[http://syake.github.com/VideoFile/asdoc/com/syake/videofile/VideoFile.html](http://syake.github.com/VideoFile/asdoc/com/syake/videofile/VideoFile.html "ASDoc")
+VideoFile  
+[http://syake.github.com/VideoFile/asdoc/com/syake/videofile/VideoFile.html](http://syake.github.com/VideoFile/asdoc/com/syake/videofile/VideoFile.html "VideoFile")  
+VideoFileManager  
+[http://syake.github.com/VideoFile/asdoc/com/syake/videofile/VideoFileManager.html](http://syake.github.com/VideoFile/asdoc/com/syake/videofile/VideoFileManager.html "VideoFileManager")  
 
 Example
 ---------------
@@ -94,5 +97,7 @@ public class Exmaple extends Sprite
   }
 }
 ```
-VideoFileExample  
+
+VideoFileExample
+---------------
 [https://github.com/syake/VideoFileExample](https://github.com/syake/VideoFileExample "VideoFileExample")
