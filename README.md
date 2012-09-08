@@ -98,6 +98,22 @@ public class Exmaple extends Sprite
 }
 ```
 
+差分を削除
+```javascript
+var list:Vector.<String> = Vector.<String>(["*.flv","*.flv","*.flv","*.flv","*.flv"]);
+videoFile.deleteDiffFiles(list, true);
+```
+
+DBの中身を全て削除する
+```javascript
+videoFile.deleteAllFile();
+```
+
+DBのテーブルを再構築する
+```javascript
+videoFile.rebuild();
+```
+
 VideoFileExample
 ---------------
 [https://github.com/syake/VideoFileExample](https://github.com/syake/VideoFileExample "VideoFileExample")
