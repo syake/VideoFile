@@ -46,37 +46,6 @@ public class Exmaple extends Sprite
     video = new Video(320, 240);
     addChild(video);
     
-    //ローカルファイルアクセス用のネットコネクションを作成する
-    var connection:NetConnection = new NetConnection();
-    connection.connect(null);
-    
-    //ネットストリームオブジェクトを作成する
-    netStream = new NetStream(connection);
-    var client:Object = new Object();
-    client.onMetaData = function(param:Object):void {
-      var bytevalue:String = (function(bytelength:uint):String {
-        if (bytelength > 1024 * 1024) {
-          return String(bytelength / 1024 / 1024) + " MB";
-        }
-        else if (bytelength > 1024) {
-          return String(bytelength / 1024) + " KB";
-        }
-        return bytelength + " バイト";
-      })(param.bytelength);
-      trace("総時間 : " + param.duration + " 秒");
-      trace("現在のサイズ : " + param.width + " × " + param.height + " ピクセル");
-      trace("FPS : " + param.framerate);
-      trace("データ容量 : " + bytevalue);
-      trace("データレート : " + param.totaldatarate + " キロビット／秒");
-      trace("ビデオレート : " + param.videodatarate + " キロビット／秒");
-      trace("オーディオレート : " + param.audiodatarate + " キロビット／秒");
-      if (param.videocodecid) trace("コーデックＩＤ : " + param.videocodecid);
-    }
-    netStream.client = client;
-    
-    //ビデオオブジェクトとネットストリームオブジェクトを関連付ける
-    video.attachNetStream(netStream);
-    
     //ダウンロード開始
     download();
   }
@@ -96,7 +65,7 @@ public class Exmaple extends Sprite
    */
   private function dispose():void
   {
-    netStream.dispose();
+    if (netStream) netStream.dispose();
     video.clear();
   }
   
@@ -120,6 +89,39 @@ public class Exmaple extends Sprite
     
     //メモリ解放
     dispose();
+    
+    if (netStream == null) {
+      //ローカルファイルアクセス用のネットコネクションを作成する
+      var connection:NetConnection = new NetConnection();
+      connection.connect(null);
+      
+      //ネットストリームオブジェクトを作成する
+      netStream = new NetStream(connection);
+      var client:Object = new Object();
+      client.onMetaData = function(param:Object):void {
+        var bytevalue:String = (function(bytelength:uint):String {
+          if (bytelength > 1024 * 1024) {
+            return String(bytelength / 1024 / 1024) + " MB";
+          }
+          else if (bytelength > 1024) {
+            return String(bytelength / 1024) + " KB";
+          }
+          return bytelength + " バイト";
+        })(param.bytelength);
+        trace("総時間 : " + param.duration + " 秒");
+        trace("現在のサイズ : " + param.width + " × " + param.height + " ピクセル");
+        trace("FPS : " + param.framerate);
+        trace("データ容量 : " + bytevalue);
+        trace("データレート : " + param.totaldatarate + " キロビット／秒");
+        trace("ビデオレート : " + param.videodatarate + " キロビット／秒");
+        trace("オーディオレート : " + param.audiodatarate + " キロビット／秒");
+        if (param.videocodecid) trace("コーデックＩＤ : " + param.videocodecid);
+      }
+      netStream.client = client;
+      
+      //ビデオオブジェクトとネットストリームオブジェクトを関連付ける
+      video.attachNetStream(netStream);
+    }
     
     //再正開始
     try {
