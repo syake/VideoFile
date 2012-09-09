@@ -128,6 +128,10 @@ public class Exmaple extends Sprite
       netStream.play(null);
       netStream.appendBytesAction(NetStreamAppendBytesAction.RESET_BEGIN);
       netStream.appendBytes(bytes);
+      if (netStream.info.dataBufferByteLength == 0) {
+        netStream = null;
+        return false;
+      }
     } catch (err:Error) {
       trace(err);
     }
