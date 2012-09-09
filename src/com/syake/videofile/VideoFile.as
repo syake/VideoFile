@@ -16,6 +16,7 @@ package com.syake.videofile
 	import flash.net.URLLoader;
 	import flash.net.URLLoaderDataFormat;
 	import flash.net.URLRequest;
+	import flash.utils.ByteArray;
 	
 	import mx.utils.UIDUtil;
 	
@@ -326,12 +327,19 @@ package com.syake.videofile
 			
 			//データを挿入
 			var data:_DataModel = new _DataModel();
-			data.id = UIDUtil.createUID();
+			try {
+				data.id = UIDUtil.createUID();
+			} catch (err:Error) {
+				data.id = createUID();
+			}
+			
 			data.movie_url = request.url;
 			insert(_dbConnection, data);
 			
 			//ファイルを生成
-			var file:File = _dir.resolvePath(data.id + ".flv");
+			var extension:String = (request.url).split(".").pop();
+			var path:String = (extension != "") ? data.id + "." + extension : data.id;
+			var file:File = _dir.resolvePath(path);
 			
 			//ファイルの内容の書き込み
 			var stream:FileStream = new FileStream();
@@ -371,18 +379,20 @@ package com.syake.videofile
 		}
 		
 		/**
-		 * 指定されたURLからファイルデータを取得します。
+		 * 指定されたURLからFileオブジェクトを取得します。
 		 * @param url メディアのURL
-		 * @return ファイルデータ
+		 * @return Fileオブジェクト
 		 */
 		public function getFile(url:String):File
 		{
-			if (!_isOpen) null;
+			if (!_isOpen) return null;
+			if (!url) return null;
 			
 			var result:Array = select(_dbConnection, "movie_url = '" + url + "'");
 			if (result != null) {
 				var obj:Object = (result.length > 0) ? result[0] : null;
-				var file:File = _dir.resolvePath(obj.id + ".flv");
+				var path:String = getPath(obj);
+				var file:File = _dir.resolvePath(path);
 				if (file.exists) {
 					return file;
 				} else {
@@ -394,7 +404,37 @@ package com.syake.videofile
 		}
 		
 		/**
-		 * 指定されたURLからファイルデータを削除します。
+		 * 指定されたURLからFileオブジェクトを取得して、バイト配列に変換します。
+		 * @param urlメディアのURL
+		 * @return バイト配列
+		 */
+		public function getFileBytes(url:String):ByteArray
+		{
+			//ファイルを取得
+			var file:File = getFile(url);
+			
+			if (!file) {
+				return null;
+			}
+			
+			if (!file.exists) {
+				return null;
+			}
+			
+			//バイト配列生成
+			var bytes:ByteArray = new ByteArray();
+			
+			//ファイルの内容の読み込み
+			var stream:FileStream = new FileStream();
+			stream.open(file, FileMode.READ);
+			stream.readBytes(bytes);
+			stream.close();
+			
+			return bytes;
+		}
+		
+		/**
+		 * 指定されたURLからFileオブジェクトを削除します。
 		 * @param url メディアのURL
 		 */
 		public function deleteFile(url:String):void
@@ -412,7 +452,7 @@ package com.syake.videofile
 		}
 		
 		/**
-		 * 指定されたURLリストにないファイルデータを削除します。
+		 * 指定されたURLリストにないFileオブジェクトを削除します。
 		 * @param list メディアのURLリスト
 		 * @param full 真（ture）のとき、VideoFileクラスが管理しているディレクトリ内の全てのメディアファイルを削除対象にする
 		 */
@@ -434,24 +474,24 @@ package com.syake.videofile
 			//ストレージ内のパスを格納したオブジェクトを用意
 			var diff_obj2:Object = {};
 			
-			//ファイルデータを削除
+			//Fileオブジェクトを削除
 			var result:Array = select(_dbConnection);
 			if (result) {
 				var temp:Array = [];
 				var n:uint = result.length;
 				for (i = 0; i < n; i++) {
 					var obj:Object = result[i];
-					var url:String = obj.id + ".flv";
+					var path:String = getPath(obj);
 					if (diff_obj[obj.movie_url]) {
-						diff_obj2[url]= true;
+						diff_obj2[path]= true;
 						continue;
 					}
 					
 					//削除するデータを生成
-					temp.push("movie_url = '" + url + "'");
+					temp.push("id = '" + obj.id + "'");
 					
 					//ファイル削除
-					file = _dir.resolvePath(url);
+					file = _dir.resolvePath(path);
 					if (file.exists) {
 						file.deleteFile();
 						file = null;
@@ -462,13 +502,13 @@ package com.syake.videofile
 				if (temp.length > 0) delet(_dbConnection, temp.join(" OR "));
 			}
 			
-			//それ以外の全てのファイルデータを削除
+			//それ以外の全てのFileオブジェクトを削除
 			if (full) {
 				var files:Array = _dir.getDirectoryListing();
 				i = files.length;
 				while (i--) {
 					file = files[i];
-					if (file.extension == "flv" && !diff_obj2[file.name]) {
+					if (file.extension != "db" && !diff_obj2[file.name]) {
 						file.deleteFile();
 						file = null;
 					}
@@ -489,7 +529,8 @@ package com.syake.videofile
 				var n:uint = result.length;
 				for (var i:uint = 0; i < n; i++) {
 					var obj:Object = result[i];
-					var file:File = _dir.resolvePath(obj.id + ".flv");
+					var path:String = getPath(obj);
+					var file:File = _dir.resolvePath(path);
 					if (file.exists) {
 						file.deleteFile();
 						file = null;
@@ -516,6 +557,41 @@ package com.syake.videofile
 			
 			//テーブルを生成
 			createTable(_dbConnection);
+		}
+		
+		/**
+		 * mx.utils.UIDUtil の createUID メソッドと似た UID を返します。
+		 * UID の形式は "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX" で、X は 16 進数字（0 ～ 9、A ～ F）です。
+		 * @return UID
+		 */
+		private function createUID():String
+		{
+			var uid:String = "";
+			var temp:String = "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX";
+			var n:uint = temp.length;
+			for (var i:uint = 0; i < n; i++) {
+				var code:String = temp.substr(i, 1);
+				if (code == "X") {
+					uid += (Math.floor(Math.random() * 16)).toString(16);
+				} else {
+					uid += code;
+				}
+			}
+			return uid.toLocaleUpperCase();
+		}
+		
+		/**
+		 * オブジェクトからアプリケーションストレージ内にあるパスを取得します。
+		 * @param obj {id, movie_url}
+		 * @return ファイル名
+		 */
+		private function getPath(obj:Object):String
+		{
+			var id:String = obj.id;
+			var movie_url:String = obj.movie_url;
+			var extension:String = movie_url.split(".").pop();
+			var path:String = (extension != "") ? id + "." + extension : id;
+			return path;
 		}
 	}
 }

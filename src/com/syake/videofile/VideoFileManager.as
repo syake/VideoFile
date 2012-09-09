@@ -24,9 +24,9 @@ package com.syake.videofile
 		private static var shared:VideoFileManager;
 		
 		/**
-		 * 指定されたURLからファイルデータを取得します。
+		 * 指定されたURLからFileオブジェクトを取得します。
 		 * @param urlメディアのURL
-		 * @return ファイルデータ
+		 * @return Fileオブジェクト
 		 */
 		public static function getFile(url:String):File
 		{
@@ -36,33 +36,15 @@ package com.syake.videofile
 		}
 		
 		/**
-		 * 指定されたURLからファイルデータを取得して、バイト配列に変換します。
+		 * 指定されたURLからFileオブジェクトを取得して、バイト配列に変換します。
 		 * @param urlメディアのURL
 		 * @return バイト配列
 		 */
 		public static function getFileBytes(url:String):ByteArray
 		{
-			//ファイルを取得
-			var file:File = VideoFileManager.getFile(url);
-			
-			if (!file) {
-				return null;
-			}
-			
-			if (!file.exists) {
-				return null;
-			}
-			
-			//バイト配列生成
-			var bytes:ByteArray = new ByteArray();
-			
-			//ファイルの内容の読み込み
-			var stream:FileStream = new FileStream();
-			stream.open(file, FileMode.READ);
-			stream.readBytes(bytes);
-			stream.close();
-			
-			return bytes;
+			if (!shared) return null;
+			var videoFile:VideoFile = shared.videoFile;
+			return videoFile.getFileBytes(url);
 		}
 		
 		/**
@@ -210,7 +192,7 @@ package com.syake.videofile
 		}
 		
 		/**
-		 * 指定されたURLからファイルデータを削除します。
+		 * 指定されたURLからFileオブジェクトを削除します。
 		 * @param url メディアのURL
 		 */
 		public function deleteFile(url:String):void
@@ -219,7 +201,7 @@ package com.syake.videofile
 		}
 		
 		/**
-		 * 指定されたURLリストにないファイルデータを削除します。
+		 * 指定されたURLリストにないFileオブジェクトを削除します。
 		 * @param list メディアのURLリスト
 		 * @param 真（ture）のとき、VideoFileManagerクラスが管理しているディレクトリ内の全てのメディアファイルを削除対象にする
 		 */
