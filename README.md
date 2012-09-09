@@ -123,7 +123,7 @@ public class Exmaple extends Sprite
       video.attachNetStream(netStream);
     }
     
-    //再正開始
+    //プレイアウト
     try {
       netStream.play(null);
       netStream.appendBytesAction(NetStreamAppendBytesAction.RESET_BEGIN);
