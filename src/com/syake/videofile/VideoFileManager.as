@@ -139,6 +139,7 @@ package com.syake.videofile
 				_videoFile.removeEventListener(IOErrorEvent.IO_ERROR, handleDownloadIOError);
 				_videoFile.removeEventListener(SecurityErrorEvent.SECURITY_ERROR, handleDownloadSecurityError);
 				_videoFile.removeEventListener(ProgressEvent.PROGRESS, dispatchEvent);
+				dispatchEvent(new ProgressEvent(ProgressEvent.PROGRESS, false, false, _videoFile.bytesLoaded, _videoFile.bytesTotal));
 				dispatchEvent(new Event(Event.COMPLETE));
 			}
 		}

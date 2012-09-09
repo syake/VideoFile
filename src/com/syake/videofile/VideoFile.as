@@ -70,6 +70,26 @@ package com.syake.videofile
 		protected var request:URLRequest;
 		
 		/**
+		 * ロード操作中に、既にロード済みのデータのバイト数を示します。
+		 * @return 
+		 */
+		public function get bytesLoaded():uint
+		{
+			if (!loader) return 0;
+			return loader.bytesLoaded;
+		}
+		
+		/**
+		 * ダウンロードデータの合計バイト数を示します。このプロパティは、ロード操作の進行中は 0 を格納し、操作が完了した時点で設定されます。また、Content-Length ヘッダーがない場合、bytesTotal の値が不確定になります。
+		 * @return 
+		 */
+		public function get bytesTotal():uint
+		{
+			if (!loader) return 0;
+			return loader.bytesTotal;
+		}
+		
+		/**
 		 * VideoFile クラスのコンストラクタ関数です。
 		 * @param path　保存先のディレクトリパス
 		 */
