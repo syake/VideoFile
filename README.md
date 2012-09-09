@@ -33,9 +33,51 @@ public class Exmaple extends Sprite
   private var video:Video;
   
   /**
+   * @see flash.net.NetStream
+   */
+  private var netStream:NetStream;
+  
+  /**
    * コンストラクタ
    */
-  function Exmaple(){
+  function Exmaple()
+  {
+    //ビデオインスタンス生成
+    video = new Video(320, 240);
+    addChild(video);
+    
+    //ローカルファイルアクセス用のネットコネクションを作成する
+    var connection:NetConnection = new NetConnection();
+    connection.connect(null);
+    
+    //ネットストリームオブジェクトを作成する
+    netStream = new NetStream(connection);
+    var client:Object = new Object();
+    client.onMetaData = function(param:Object):void {
+      var bytevalue:String = (function(bytelength:uint):String {
+        if (bytelength > 1024 * 1024) {
+          return String(bytelength / 1024 / 1024) + " MB";
+        }
+        else if (bytelength > 1024) {
+          return String(bytelength / 1024) + " KB";
+        }
+        return bytelength + " バイト";
+      })(param.bytelength);
+      trace("総時間 : " + param.duration + " 秒");
+      trace("現在のサイズ : " + param.width + " × " + param.height + " ピクセル");
+      trace("FPS : " + param.framerate);
+      trace("データ容量 : " + bytevalue);
+      trace("データレート : " + param.totaldatarate + " キロビット／秒");
+      trace("ビデオレート : " + param.videodatarate + " キロビット／秒");
+      trace("オーディオレート : " + param.audiodatarate + " キロビット／秒");
+      if (param.videocodecid) trace("コーデックＩＤ : " + param.videocodecid);
+    }
+    netStream.client = client;
+    
+    //ビデオオブジェクトとネットストリームオブジェクトを関連付ける
+    video.attachNetStream(netStream);
+    
+    //ダウンロード開始
     download();
   }
   
@@ -50,6 +92,15 @@ public class Exmaple extends Sprite
   }
   
   /**
+   * メモリ解放
+   */
+  private function dispose():void
+  {
+    netStream.dispose();
+    video.clear();
+  }
+  
+  /**
    * メディアのダウンロードに成功したときに呼び出されます。
    * @param event
    */
@@ -58,6 +109,7 @@ public class Exmaple extends Sprite
     //ファイルを取得
     var file:File = videoFile.getFile(url);
     
+    //メディアファイルのバイト配列を取得
     var bytes:ByteArray = new ByteArray();
     
     //ファイルの内容の読み込み
@@ -66,25 +118,8 @@ public class Exmaple extends Sprite
     stream.readBytes(bytes);
     stream.close();
     
-    //ローカルファイルアクセス用のネットコネクションを作成する
-    var connection:NetConnection = new NetConnection();
-    connection.connect(null);
-    
-    //ネットストリームオブジェクトを作成する
-    var netStream:NetStream = new NetStream(connection);
-    var client:Object = new Object();
-    client.onMetaData = function(param:Object):void {
-      trace("総時間 : " + param.duration + "秒");
-      trace("幅 : " + param.width);
-      trace("高さ : " + param.height);
-      trace("ビデオレート : " + param.videodatarate + "kb");
-      trace("フレームレート : " + param.framerate + "fps");
-      trace("コーデックＩＤ : " + param.videocodecid);
-    }
-    netStream.client = client;
-    
-    //ビデオオブジェクトとネットストリームオブジェクトを関連付ける
-    video.attachNetStream(netStream);
+    //メモリ解放
+    dispose();
     
     //再正開始
     try {
