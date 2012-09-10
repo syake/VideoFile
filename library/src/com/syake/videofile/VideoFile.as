@@ -273,7 +273,7 @@ package com.syake.videofile
 		 */
 		protected function delet(sqlConnection:SQLConnection, value:String = ""):void
 		{
-			var sqlString:String = "DELETE FROM video ";
+			var sqlString:String = "DELETE FROM video";
 			if (value != "") sqlString += " WHERE " + value;
 			var statement:SQLStatement = new SQLStatement();
 			statement.sqlConnection = sqlConnection;
@@ -303,6 +303,9 @@ package com.syake.videofile
 					dispatchEvent(new Event(Event.COMPLETE));
 					return;
 				}
+			} else {
+				//古いデータを削除
+				deleteFile(url);
 			}
 			
 			if (loader == null) {
@@ -341,9 +344,6 @@ package com.syake.videofile
 		protected function handleDownloadComplete(event:Event):void
 		{
 			deconfigureLoaderListeners(loader);
-			
-			//古いデータを削除
-			deleteFile(request.url);
 			
 			//データを挿入
 			var data:_DataModel = new _DataModel();
@@ -519,7 +519,7 @@ package com.syake.videofile
 				}
 				
 				//DBからデータを削除
-				if (temp.length > 0) delet(_dbConnection, temp.join(" OR "));
+				if (temp.length > 0) delet(_dbConnection, "(" + temp.join(" OR ") + ")");
 			}
 			
 			//それ以外の全てのFileオブジェクトを削除

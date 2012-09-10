@@ -48,29 +48,27 @@
 			/**
 			 * ダウンロードで使用する動画ファイルのリスト
 			 */
-			private static const VIDEO_URL_LIST1:Vector.<String> = Vector.<String>([
-				"http://syake.github.com/VideoFileExample/QfPqYM174JQ.flv",
-				"http://syake.github.com/VideoFileExample/1kuCek4TRK8.flv",
-				"http://syake.github.com/VideoFileExample/voyhmNK1NGQ.flv",
-				"http://syake.github.com/VideoFileExample/qou0fvfzMj8.flv",
-				"http://syake.github.com/VideoFileExample/3Br7N08CTaw.flv"
+			private static const VIDEO_URL_LISTS:Vector.<Vector.<String>> = Vector.<Vector.<String>>([
+				Vector.<String>([
+					"http://syake.github.com/VideoFile/video/QfPqYM174JQ.flv",
+					"http://syake.github.com/VideoFile/video/1kuCek4TRK8.flv",
+					"http://syake.github.com/VideoFile/video/voyhmNK1NGQ.flv",
+					"http://syake.github.com/VideoFile/video/qou0fvfzMj8.flv",
+					"http://syake.github.com/VideoFile/video/3Br7N08CTaw.flv"
+				]),
+				Vector.<String>([
+					"http://syake.github.com/VideoFile/video/a3aZQi6ALmA.flv",
+					"http://syake.github.com/VideoFile/video/LLocj8jWf1I.flv",
+					"http://syake.github.com/VideoFile/video/voyhmNK1NGQ.flv",
+					"http://syake.github.com/VideoFile/video/qou0fvfzMj8.flv",
+					"http://syake.github.com/VideoFile/video/3Br7N08CTaw.flv"
+				])
 			]);
 			
 			/**
-			 * ダウンロードで使用する動画ファイルのリスト
+			 * 現在ダウンロードされている動画ファイルのリスト番号
 			 */
-			private static const VIDEO_URL_LIST2:Vector.<String> = Vector.<String>([
-				"http://syake.github.com/VideoFileExample/a3aZQi6ALmA.flv",
-				"http://syake.github.com/VideoFileExample/LLocj8jWf1I.flv",
-				"http://syake.github.com/VideoFileExample/voyhmNK1NGQ.flv",
-				"http://syake.github.com/VideoFileExample/qou0fvfzMj8.flv",
-				"http://syake.github.com/VideoFileExample/3Br7N08CTaw.flv"
-			]);
-			
-			/**
-			 * 現在ダウンロードされている動画ファイルのリスト
-			 */
-			private var current_video_url_list:Vector.<String>;
+			private var current_list_id:uint = 0;
 			
 			/**
 			 * バッファを示すローディングバー
@@ -104,14 +102,7 @@
 			{
 				//SharedObject
 				so = SharedObject.getLocal("config");
-				if (so.data.video_url_list is Vector.<Object>) {
-					var list:Vector.<Object> = so.data.video_url_list;
-					var n:uint = list.length;
-					current_video_url_list = new Vector.<String>(n);
-					for (var i:uint = 0; i < n; i++) {
-						current_video_url_list[i] = list[i] as String;
-					}
-				}
+				current_list_id = so.data.list_id || 0;
 				
 				//プログレスバー生成
 				var w:Number = progressbar.width;
@@ -159,24 +150,26 @@
 			
 			/**
 			 * FLVをダウンロード
+			 * @param ダウンロード番号
 			 */
-			private function downloads(list:Vector.<String>):void
+			private function downloads(id:uint):void
 			{
-				if (!list) return;
+				//リストID更新
+				current_list_id = id;
+				so.data.list_id = current_list_id;
+				so.flush();
+				
+				//URLリスト
+				var list:Vector.<String> = (current_list_id < VIDEO_URL_LISTS.length) ? VIDEO_URL_LISTS[current_list_id] : VIDEO_URL_LISTS[0];
 				
 				//メモリ解放
 				dispose();
 				
-				//URLリスト
-				current_video_url_list = list;
-				so.data.video_url_list = current_video_url_list;
-				so.flush();
-				
 				//差分を削除
-				videoFileManager.deleteDiffFiles(current_video_url_list, true);
+				videoFileManager.deleteDiffFiles(list, true);
 				
 				//ダウンロード開始
-				videoFileManager.downloads(current_video_url_list, cache_cb.selected);
+				videoFileManager.downloads(list, cache_cb.selected);
 			}
 			
 			/**
@@ -231,8 +224,9 @@
 			 */
 			private function show(index:uint):void
 			{
-				if (!current_video_url_list) return;
-				var url:String = current_video_url_list[index];
+				//URL取得
+				var list:Vector.<String> = (current_list_id < VIDEO_URL_LISTS.length) ? VIDEO_URL_LISTS[current_list_id] : VIDEO_URL_LISTS[0];
+				var url:String = list[index];
 				
 				//メモリ解放
 				dispose();
@@ -346,8 +340,8 @@
 	</s:layout>
 	<s:VGroup width="100%" height="100%" gap="10" paddingLeft="10" paddingRight="10" paddingTop="10" paddingBottom="10" horizontalAlign="left">
 		<s:HGroup gap="10" verticalAlign="middle">
-			<s:Button label="download 1" click="downloads(VIDEO_URL_LIST1)" />
-			<s:Button label="download 2" click="downloads(VIDEO_URL_LIST2)" />
+			<s:Button label="download 1" click="downloads(0)" />
+			<s:Button label="download 2" click="downloads(1)" />
 			<s:CheckBox label="" selected="true" id="cache_cb" />
 		</s:HGroup>
 		<s:HGroup gap="10">
