@@ -2,8 +2,8 @@ VideoFile
 =========
 
 メディアファイルをアプリケーションストレージ内にダウンロードして管理します。  
-Flash 10.1以降  
-AIRアプリ専用
+ * Flash 10.1以降  
+ * AIRアプリ専用
 
 ASDoc
 ---------------
@@ -160,8 +160,6 @@ videoFile.rebuild();
 サンプルファイル
 ---------------
 ###VideoFileExample
-[examples/VideoFileExample](https://github.com/syake/VideoFile/tree/master/examples/VideoFileExample "VideoFileExample")  
 動画リストを連続してダウンロードするサンプルです。  
-＊開発環境は Flex モバイルプロジェクト で作成しています。  
-
+開発環境は Flex モバイルプロジェクト で作成しています。  
 
