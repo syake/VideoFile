@@ -1,7 +1,9 @@
 VideoFile
 =========
 
-メディアファイルをアプリケーションストレージ内にダウンロードして管理します。
+メディアファイルをアプリケーションストレージ内にダウンロードして管理します。  
+Flash 10.1以降  
+AIRアプリ専用
 
 ASDoc
 ---------------
@@ -20,7 +22,7 @@ public class Exmaple extends Sprite
   /**
    * ダウンロードで使用する動画ファイル
    */
-  private var url = "http://syake.github.com/VideoFileExample/QfPqYM174JQ.flv";
+  private var url = "http://syake.github.com/VideoFile/video/QfPqYM174JQ.flv";
   
   /**
    * @see com.syake.filesystem.VideoFile
@@ -154,7 +156,3 @@ DBのテーブルを再構築する
 ```javascript
 videoFile.rebuild();
 ```
-
-VideoFileExample
----------------
-[https://github.com/syake/VideoFileExample](https://github.com/syake/VideoFileExample "VideoFileExample")
