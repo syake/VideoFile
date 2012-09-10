@@ -1,0 +1,370 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		title="VideoFile Example"
+		creationComplete="init()"
+		xmlns:mx="library://ns.adobe.com/flex/mx">
+	<fx:Declarations>
+		<!-- 非ビジュアルエレメント (サービス、値オブジェクトなど) をここに配置 -->
+		<fx:Component className="Alert">
+			<s:SkinnablePopUpContainer>
+				<fx:Script>
+					<![CDATA[
+						import mx.managers.PopUpManager;
+						
+						import spark.events.PopUpEvent;
+						protected var accept:Function;
+						public static function show(owner:DisplayObjectContainer, message:String, title:String, accept:Function = null):void
+						{
+							var a:Alert = new Alert();
+							a.open(owner, true);
+							a.titleWin.title = title;
+							a.labelText.text = message;
+							a.accept = accept;
+							PopUpManager.centerPopUp(a);
+							
+							a.addEventListener(PopUpEvent.CLOSE, a.handleClosed);
+						}
+						protected function handleClosed(event:PopUpEvent):void
+						{
+							removeEventListener(PopUpEvent.CLOSE, handleClosed);
+							if (accept != null) accept();
+						}
+					]]>
+				</fx:Script>
+				<s:TitleWindow id="titleWin" title="Caption" close="close()">
+					<s:VGroup horizontalAlign="center" paddingTop="8" paddingBottom="8" paddingLeft="8" paddingRight="8" gap="20">
+						<s:Label id="labelText" text="Message..." />
+						<s:Button label="O K" width="80" click="close()" />
+					</s:VGroup>
+				</s:TitleWindow>
+			</s:SkinnablePopUpContainer>
+		</fx:Component>
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import com.syake.videofile.VideoFileManager;
+			
+			/**
+			 * ダウンロードで使用する動画ファイルのリスト
+			 */
+			private static const VIDEO_URL_LIST1:Vector.<String> = Vector.<String>([
+				"http://syake.github.com/VideoFileExample/QfPqYM174JQ.flv",
+				"http://syake.github.com/VideoFileExample/1kuCek4TRK8.flv",
+				"http://syake.github.com/VideoFileExample/voyhmNK1NGQ.flv",
+				"http://syake.github.com/VideoFileExample/qou0fvfzMj8.flv",
+				"http://syake.github.com/VideoFileExample/3Br7N08CTaw.flv"
+			]);
+			
+			/**
+			 * ダウンロードで使用する動画ファイルのリスト
+			 */
+			private static const VIDEO_URL_LIST2:Vector.<String> = Vector.<String>([
+				"http://syake.github.com/VideoFileExample/a3aZQi6ALmA.flv",
+				"http://syake.github.com/VideoFileExample/LLocj8jWf1I.flv",
+				"http://syake.github.com/VideoFileExample/voyhmNK1NGQ.flv",
+				"http://syake.github.com/VideoFileExample/qou0fvfzMj8.flv",
+				"http://syake.github.com/VideoFileExample/3Br7N08CTaw.flv"
+			]);
+			
+			/**
+			 * 現在ダウンロードされている動画ファイルのリスト
+			 */
+			private var current_video_url_list:Vector.<String>;
+			
+			/**
+			 * バッファを示すローディングバー
+			 */
+			private var bufferBar:Shape;
+			
+			/**
+			 * @see com.syake.filesystem.VideoFileManager
+			 */
+			private var videoFileManager:VideoFileManager;
+			
+			/**
+			 * @see flash.net.NetStream
+			 */
+			private var netStream:NetStream;
+			
+			/**
+			 * @see flash.media.Video
+			 */
+			private var video:Video;
+			
+			/**
+			 * @see flash.net.SharedObject
+			 */
+			private var so:SharedObject;
+			
+			/**
+			 * 初回処理
+			 */
+			private function init():void
+			{
+				//SharedObject
+				so = SharedObject.getLocal("config");
+				if (so.data.video_url_list is Vector.<Object>) {
+					var list:Vector.<Object> = so.data.video_url_list;
+					var n:uint = list.length;
+					current_video_url_list = new Vector.<String>(n);
+					for (var i:uint = 0; i < n; i++) {
+						current_video_url_list[i] = list[i] as String;
+					}
+				}
+				
+				//プログレスバー生成
+				var w:Number = progressbar.width;
+				var h:Number = progressbar.height;
+				
+				progressbar.graphics.beginFill(0x333333);
+				progressbar.graphics.drawRect(0, 0, w, h);
+				progressbar.graphics.endFill();
+				
+				progressbar.graphics.beginFill(0x999999);
+				progressbar.graphics.drawRect(1, 1, w - 2, h - 2);
+				progressbar.graphics.endFill();
+				
+				bufferBar = new Shape();
+				bufferBar.x = bufferBar.y = 1;
+				bufferBar.graphics.beginFill(0xFFFFFF);
+				bufferBar.graphics.drawRect(0, 0, w - 2, h - 2);
+				bufferBar.graphics.endFill();
+				progressbar.addChild(bufferBar);
+				
+				//ビデオ生成
+				video = new Video(300, 169);
+				content.addChild(video);
+				
+				//VideoFileクラス生成
+				videoFileManager = new VideoFileManager("video");
+				videoFileManager.addEventListener(Event.COMPLETE, handleDownloadComplete);
+				videoFileManager.addEventListener(IOErrorEvent.IO_ERROR, handleDownloadIOError);
+				videoFileManager.addEventListener(SecurityErrorEvent.SECURITY_ERROR, handleDownloadSecurityError);
+				videoFileManager.addEventListener(ProgressEvent.PROGRESS, handleDownloadProgress);
+				
+				//メモリ解放
+				dispose();
+			}
+			
+			/**
+			 * メモリ解放
+			 */
+			private function dispose():void
+			{
+				bufferBar.scaleX = 0;
+				if (netStream) netStream.dispose();
+				video.clear();
+			}
+			
+			/**
+			 * FLVをダウンロード
+			 */
+			private function downloads(list:Vector.<String>):void
+			{
+				if (!list) return;
+				
+				//メモリ解放
+				dispose();
+				
+				//URLリスト
+				current_video_url_list = list;
+				so.data.video_url_list = current_video_url_list;
+				so.flush();
+				
+				//差分を削除
+				videoFileManager.deleteDiffFiles(current_video_url_list, true);
+				
+				//ダウンロード開始
+				videoFileManager.downloads(current_video_url_list, cache_cb.selected);
+			}
+			
+			/**
+			 * メディアのダウンロードに成功したときに呼び出されます。
+			 * @param event
+			 */
+			private function handleDownloadComplete(event:Event):void
+			{
+				show(0);
+			}
+			
+			/**
+			 * メディアのダウンロードに失敗したときに呼び出されます。
+			 * @param event
+			 */
+			private function handleDownloadIOError(event:IOErrorEvent):void
+			{
+				Alert.show(this, "動画のダウンロードに失敗しました", "Error", function():void
+				{
+					videoFileManager.nextDownload();
+				});
+			}
+			
+			/**
+			 * メディアのダウンロード時にセキュリティエラーが発生したときに呼び出されます。
+			 * @param event
+			 */
+			private function handleDownloadSecurityError(event:SecurityErrorEvent):void
+			{
+				Alert.show(this, "動画のダウンロードに失敗しました", "Error", function():void
+				{
+					videoFileManager.nextDownload();
+				});
+			}
+			
+			/**
+			 * ダウンロード進行中
+			 * @param event
+			 */
+			private function handleDownloadProgress(event:ProgressEvent):void
+			{
+				var manager:VideoFileManager = event.target as VideoFileManager;
+				var loaded:uint = manager.loaded;
+				var total:uint = manager.total;
+				progresscount.text = loaded + "/" + total;
+				bufferBar.scaleX = (event.bytesTotal > 0) ? event.bytesLoaded / event.bytesTotal : 0;
+			}
+			
+			/**
+			 * ダウンロードしてあるFLVを表示します。
+			 * @param index
+			 */
+			private function show(index:uint):void
+			{
+				if (!current_video_url_list) return;
+				var url:String = current_video_url_list[index];
+				
+				//メモリ解放
+				dispose();
+				
+				//再生開始
+				if (confirm(url)) bufferBar.scaleX = 1;
+			}
+			
+			/**
+			 * 指定されたURLからFileのバイト配列を取得して、動画を再生します。
+			 * @param url
+			 * @return
+			 */
+			private function confirm(url:String):Boolean
+			{
+				//メディアファイルのバイト配列を取得
+				var bytes:ByteArray = VideoFileManager.getFileBytes(url);
+				if (bytes == null) {
+					Alert.show(this, "動画がダウンロードされていません", "Error");
+					return false;
+				}
+				
+				if (netStream == null) {
+					//ローカルファイルアクセス用のネットコネクションを作成する
+					var connection:NetConnection = new NetConnection();
+					connection.connect(null);
+					
+					//ネットストリームオブジェクトを作成する
+					netStream = new NetStream(connection);
+					var client:Object = new Object();
+					client.onMetaData = function(param:Object):void {
+						var bytevalue:String = (function(bytelength:uint):String {
+							if (bytelength > 1024 * 1024) {
+								return String(bytelength / 1024 / 1024) + " MB";
+							}
+							else if (bytelength > 1024) {
+								return String(bytelength / 1024) + " KB";
+							}
+							return bytelength + " バイト";
+						})(param.bytelength);
+						trace("総時間 : " + param.duration + " 秒");
+						trace("現在のサイズ : " + param.width + " × " + param.height + " ピクセル");
+						trace("FPS : " + param.framerate);
+						trace("データ容量 : " + bytevalue);
+						trace("データレート : " + param.totaldatarate + " キロビット／秒");
+						trace("ビデオレート : " + param.videodatarate + " キロビット／秒");
+						trace("オーディオレート : " + param.audiodatarate + " キロビット／秒");
+						if (param.videocodecid) trace("コーデックＩＤ : " + param.videocodecid);
+						
+						for (var e:String in param) {
+							trace(e + " : " + param[e]);
+						}
+					}
+					netStream.client = client;
+					netStream.addEventListener(NetStatusEvent.NET_STATUS, handleStreamStatus, false, 0, true);
+					
+					//ビデオオブジェクトとネットストリームオブジェクトを関連付ける
+					video.attachNetStream(netStream);
+				}
+				
+				//再正開始
+				try {
+					netStream.play(null);
+					netStream.appendBytesAction(NetStreamAppendBytesAction.RESET_BEGIN);
+					netStream.appendBytes(bytes);
+					if (netStream.info.dataBufferByteLength == 0) {
+						netStream = null;
+						return false;
+					}
+					return true;
+				} catch (err:Error) {
+					trace(err);
+				}
+				return false;
+			}
+			
+			/**
+			 * NetStream による接続状況を監視します。
+			 * @param	event
+			 */
+			private function handleStreamStatus(event:NetStatusEvent):void
+			{
+				trace("handleStreamStatus : " + event.info.code);
+			}
+			
+			/**
+			 * DBの中身を全て削除する
+			 */
+			private function allClear():void
+			{
+				dispose();
+				videoFileManager.deleteAllFile();
+				progresscount.text = "-/-";
+				Alert.show(this, "動画は全て削除されました", "Conform");
+			}
+			
+			/**
+			 * DBのテーブルを再構築する
+			 */
+			private function rebuild():void
+			{
+				dispose();
+				videoFileManager.rebuild();
+				progresscount.text = "-/-";
+				Alert.show(this, "テーブルは再構築されました", "Conform");
+			}
+		]]>
+	</fx:Script>
+	<s:layout>
+		<s:HorizontalLayout gap="5" verticalAlign="top" />
+	</s:layout>
+	<s:VGroup width="100%" height="100%" gap="10" paddingLeft="10" paddingRight="10" paddingTop="10" paddingBottom="10" horizontalAlign="left">
+		<s:HGroup gap="10" verticalAlign="middle">
+			<s:Button label="download 1" click="downloads(VIDEO_URL_LIST1)" />
+			<s:Button label="download 2" click="downloads(VIDEO_URL_LIST2)" />
+			<s:CheckBox label="" selected="true" id="cache_cb" />
+		</s:HGroup>
+		<s:HGroup gap="10">
+			<s:Button label="全て削除" width="140" click="allClear()" />
+			<s:Button label="テーブル再構築" width="140" click="rebuild()" />
+		</s:HGroup>
+		<s:HGroup gap="10">
+			<s:Button label="1" width="50" click="show(0)" />
+			<s:Button label="2" width="50" click="show(1)" />
+			<s:Button label="3" width="50" click="show(2)" />
+			<s:Button label="4" width="50" click="show(3)" />
+			<s:Button label="5" width="50" click="show(4)" />
+		</s:HGroup>
+		<s:HGroup width="100%" gap="5" verticalAlign="middle">
+			<mx:UIComponent id="progressbar" width="100%" height="10" />
+			<s:Label text="-/-" textAlign="right" minWidth="25" id="progresscount" />
+		</s:HGroup>
+		<mx:UIComponent id="content" />
+	</s:VGroup>
+</s:View>
