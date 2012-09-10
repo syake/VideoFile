@@ -156,3 +156,12 @@ DBのテーブルを再構築する
 ```javascript
 videoFile.rebuild();
 ```
+
+サンプルファイル
+---------------
+###VideoFileExample
+_examples/VideoFileExample_  
+動画リストを連続してダウンロードするサンプルです。  
+＊開発環境は Flex モバイルプロジェクト で作成しています。  
+
+
