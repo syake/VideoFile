@@ -1,16 +1,35 @@
 VideoFile
 =========
 
-メディアファイルをアプリケーションストレージ内にダウンロードして管理します。  
- * Flash 10.1以降  
- * AIRアプリ専用
-
-ASDoc
+条件
 ---------------
-VideoFile  
-[http://syake.github.com/VideoFile/asdoc/com/syake/videofile/VideoFile.html](http://syake.github.com/VideoFile/asdoc/com/syake/videofile/VideoFile.html "VideoFile")  
-VideoFileManager  
-[http://syake.github.com/VideoFile/asdoc/com/syake/videofile/VideoFileManager.html](http://syake.github.com/VideoFile/asdoc/com/syake/videofile/VideoFileManager.html "VideoFileManager")  
+ * Flash 10.1
+ * AIR 2.0
+
+機能
+---------------
+ * メディアファイルをアプリケーションストレージ内にダウンロードする
+ * ダウンロードしたファイルをSQLiteで管理する
+ * ローカル再生するためにurlを指定してFileクラスを取得する
+ * その他SQLiteのテーブルをリセット
+
+ダウンロード
+---------------
+ * このプラグインはGitHubにて公開されています
+    * [https://github.com/syake/VideoFile/downloads](https://github.com/syake/VideoFile/downloads)
+
+ドキュメント
+---------------
+ * VideoFile
+    * [http://syake.github.com/VideoFile/asdoc/com/syake/videofile/VideoFile.html](http://syake.github.com/VideoFile/asdoc/com/syake/videofile/VideoFile.html "VideoFile")  
+ * VideoFileManager
+    * [http://syake.github.com/VideoFile/asdoc/com/syake/videofile/VideoFileManager.html](http://syake.github.com/VideoFile/asdoc/com/syake/videofile/VideoFileManager.html "VideoFileManager")  
+
+サンプルファイル
+---------------
+ * VideoFileExample
+    * 動画リストを連続してダウンロードするサンプルです。
+    * 開発環境は Flex モバイルプロジェクト で作成しています。 
 
 Example
 ---------------
@@ -155,11 +174,5 @@ videoFile.deleteAllFile();
 DBのテーブルを再構築する
 ```javascript
 videoFile.rebuild();
-```
-
-サンプルファイル
----------------
-###VideoFileExample
-動画リストを連続してダウンロードするサンプルです。  
-開発環境は Flex モバイルプロジェクト で作成しています。  
+``` 
 
