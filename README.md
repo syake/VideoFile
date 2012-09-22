@@ -1,9 +1,12 @@
 VideoFile
 =========
 
+ActionScript 3.0用 メディアファイル管理クラス
+
 条件
 ---------------
- * Flash 10.1
+ * ActionScript 3.0
+ * Flash Player 10.1
  * AIR 2.0
 
 機能
@@ -20,10 +23,8 @@ VideoFile
 
 ドキュメント
 ---------------
- * VideoFile
-    * [http://syake.github.com/VideoFile/asdoc/com/syake/videofile/VideoFile.html](http://syake.github.com/VideoFile/asdoc/com/syake/videofile/VideoFile.html "VideoFile")  
- * VideoFileManager
-    * [http://syake.github.com/VideoFile/asdoc/com/syake/videofile/VideoFileManager.html](http://syake.github.com/VideoFile/asdoc/com/syake/videofile/VideoFileManager.html "VideoFileManager")  
+ * [VideoFile](http://syake.github.com/VideoFile/asdoc/com/syake/videofile/VideoFile.html "VideoFile")  
+ * [VideoFileManager](http://syake.github.com/VideoFile/asdoc/com/syake/videofile/VideoFileManager.html "VideoFileManager")  
 
 サンプルファイル
 ---------------
